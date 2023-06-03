@@ -49,8 +49,13 @@ class Line:
 
 class Edge:
     def __init__(self, point1 : Point, point2 : Point):
-        self.point1 = point1
-        self.point2 = point2
+        # switching point1 and point2 should result in the same edge for hashing purposes
+        if point1.x > point2.x or (point1.x == point2.x and point1.y > point2.y):
+            self.point1 = point2
+            self.point2 = point1
+        else:
+            self.point1 = point1
+            self.point2 = point2
 
     def __eq__(self, other):
         return (self.point1 == other.point1 and self.point2 == other.point2) or (self.point1 == other.point2 and self.point2 == other.point1)
