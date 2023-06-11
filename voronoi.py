@@ -1,6 +1,7 @@
 from geom import Point, Edge, Line, Triangle
 from delaunay import delaunay_triangulation, plot_triangulation
 from matplotlib import pyplot as plt
+import argparse
 
 def plot_voronoi(bounds, points, plot_triangles = False, with_circles = False):
     triangulation = delaunay_triangulation(points)
@@ -86,10 +87,7 @@ def plot_voronoi(bounds, points, plot_triangles = False, with_circles = False):
                
         if len(voronoi_edges[edge]) == 2:
             e = voronoi_edges[edge]
-            ax.plot([e[0].x,e[1].x],[e[0].y,e[1].y], color="blue")
-
-    print(len(triangulation)) 
-    print(len(voronoi_edges))   
+            ax.plot([e[0].x,e[1].x],[e[0].y,e[1].y], color="blue")  
 
     if plot_triangles:
         ax = plot_triangulation(triangulation, ax, with_circles)
@@ -98,6 +96,16 @@ def plot_voronoi(bounds, points, plot_triangles = False, with_circles = False):
 
 
 if __name__ == "__main__":
-    points = [Point(1,1),Point(2,4),Point(-3,2),Point(6,3),Point(-2.4,3.7),Point(1.5,-2.6),Point(0.2,0.1),Point(0.4,2), Point(-3,-2)]
-    bounds = [-10,-10,10,10]
-    plot_voronoi(bounds,points)
+    parser = argparse.ArgumentParser(description="Plot Voronoi diagram")
+    parser.add_argument("points", metavar='p', type=float, nargs='+', help="list of points coordinates, each two consequtive numbers correspond to one point")
+    parser.add_argument("--triangulation", action="store_true", help="plot Delaunay triangulation as well")
+    parser.add_argument("--circles", action="store_true", help="plot Delaunay circumcircles, only works if triangulation is also used")
+    args = parser.parse_args()
+    if len(args.points) % 2:
+        print("As each point has two coordinates, please provide an even number of coordinates")
+    else:
+        points = []
+        for coord in range(0, len(args.points), 2):
+            points.append(Point(args.points[coord], args.points[coord+1]))
+        bounds = [-10,-10,10,10]
+        plot_voronoi(bounds,points, args.triangulation, args.circles)

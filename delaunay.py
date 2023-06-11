@@ -13,11 +13,12 @@ def delaunay_triangulation(points):
     max_y = sorted_y[sz-1].y
 
     # add super-triangle that contains all the points inside it
-    super_triangle = Triangle(Point(min_x-1,min_y-1),Point(min_x-1,min_y+2*(max_y-min_y)+10),Point(min_x+2*(max_x-min_x)+10,min_y-1))
+    super_triangle = Triangle(Point(min_x-10,min_y-10),Point(min_x-10,min_y+2*(max_y-min_y)+100),Point(min_x+2*(max_x-min_x)+100,min_y-10))
     triangulation = []
     triangulation.append(super_triangle)
 
     for point in points:
+        # add points one by one, removing all triangles with circumcircles containing the point and adding new triangles with the point
         bad_triangles = []
         for triangle in triangulation:
             if triangle.point_in_circumcircle(point):
@@ -42,6 +43,7 @@ def delaunay_triangulation(points):
             triangle = Triangle(edge.point1, edge.point2, point)
             triangulation.append(triangle)
 
+    # remove triangles containing supertriangle vertices
     big_triangles = []
     for triangle in triangulation:
         for vertex in triangle.points:

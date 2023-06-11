@@ -45,7 +45,12 @@ class Line:
         x = (self.b*line2.c-self.c*line2.b)/(self.a*line2.b-self.b*line2.a)
         y = (self.c*line2.a-self.a*line2.c)/(self.a*line2.b-self.b*line2.a)
         return Point(x, y)
-
+    
+    def find_angle(self, line2):
+        # returns tan of an angle between two lines
+        if self.a == line2.a and self.b == line2.b:
+            return 0
+        return (line2.a*self.b - self.a*line2.b) / (self.a*line2.a + self.b * line2.b)
 
 class Edge:
     def __init__(self, point1 : Point, point2 : Point):
