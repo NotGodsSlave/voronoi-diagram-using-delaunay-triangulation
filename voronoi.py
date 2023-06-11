@@ -41,47 +41,45 @@ def plot_voronoi(bounds, points, plot_triangles = False, with_circles = False):
                 else:
                     voronoi_edges[edge].append(Point(p.x,bounds[3]))
             else:
-                
-                # otherwise find the closest point on voronoi line to the third triangle vertex
-                # and select a point on bounds on the opposite side to it as the second voronoi edge vertex
-                wrong_dir_point = voronoi_line.find_perpendicular(opposite_point[edge]).find_intersection(voronoi_line)
-                
+                # otherwise check if circumcenter lies between opposite point and the edge
+                circumcenter = voronoi_edges[edge][0]
+                edge_line = edge.get_line()
+                between = edge_line.same_side(circumcenter,opposite_point[edge])
+
+                # find intersection between voronoi line and the edge
+                intersection = voronoi_line.find_intersection(edge_line)
+
+                # determine whether x on bounds needs to be lower or higher than at circumcenter
+                direction = True #higher
+                if (between and intersection.x < circumcenter.x) or (not between and intersection.x >= circumcenter.x):
+                    direction = False #lower
+                if circumcenter == intersection and opposite_point[edge].x < circumcenter.x:
+                    direction = True
+
                 # find points of intersection with the bounds
-                x_low = bounds[0]
-                y_low = -voronoi_line.a/voronoi_line.b*x_low - voronoi_line.c/voronoi_line.b
-                if y_low < bounds[1] or y_low > bounds[3]:
-                    y_low = bounds[1]
-                    x_low = -voronoi_line.b/voronoi_line.a*y_low - voronoi_line.c/voronoi_line.a
+                bound_intersections = set()
+                for x in [bounds[0],bounds[2]]:
+                    y = -voronoi_line.a/voronoi_line.b*x - voronoi_line.c/voronoi_line.b
+                    if y >= bounds[1] and y <= bounds[3]:
+                        bound_intersections.add(Point(x,y))
 
-                x_high = bounds[2]
-                y_high = -voronoi_line.a/voronoi_line.b*x_high - voronoi_line.c/voronoi_line.b
-                if y_high > bounds[3] or y_high < bounds[1]:
-                    y_high = bounds[3]
-                    x_high = -voronoi_line.b/voronoi_line.a*y_high - voronoi_line.c/voronoi_line.a
-                point_low = Point(x_low,y_low)
-                point_high = Point(x_high,y_high)
+                for y in [bounds[1],bounds[3]]:
+                    x = -voronoi_line.b/voronoi_line.a*y - voronoi_line.c/voronoi_line.a
+                    if x >= bounds[0] and x <= bounds[2]:
+                        bound_intersections.add(Point(x,y))
+                bi = list(bound_intersections)
 
-                if wrong_dir_point.x > p.x:
-                    if x_low < x_high:
-                        point = point_low
+                # find which point of intersection to use based on voronoi edge direction
+                if direction:
+                    if bi[0].x > bi[1].x:
+                        point = bi[0]
                     else:
-                        point = point_high
-                elif wrong_dir_point.x < p.x:
-                    if x_low > x_high:
-                        point = point_low
-                    else:
-                        point = point_high
+                        point = bi[1]
                 else:
-                    if wrong_dir_point.y > p.y:
-                        if y_low < y_high:
-                            point = point_low
-                        else:
-                            point = point_high
+                    if bi[0].x < bi[1].x:
+                        point = bi[0]
                     else:
-                        if y_low > y_high:
-                            point = point_low
-                        else:
-                            point = point_high 
+                        point = bi[1]
 
                 voronoi_edges[edge].append(point)
                
@@ -107,5 +105,6 @@ if __name__ == "__main__":
         points = []
         for coord in range(0, len(args.points), 2):
             points.append(Point(args.points[coord], args.points[coord+1]))
+        # TODO: dynamic bounds as diagram shows incorrectly when there is a circumcenter outside the bounds
         bounds = [-10,-10,10,10]
         plot_voronoi(bounds,points, args.triangulation, args.circles)
