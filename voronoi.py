@@ -3,12 +3,18 @@ from delaunay import delaunay_triangulation, plot_triangulation
 from matplotlib import pyplot as plt
 import argparse
 
-def plot_voronoi(bounds, points, plot_triangles = False, with_circles = False):
+def plot_voronoi(points, plot_triangles = False, with_circles = False):
     triangulation = delaunay_triangulation(points)
     fig, ax = plt.subplots()
     for point in points:
         ax.plot(point.x,point.y,'bo')
     
+    # determining diagram bounds
+    circumcenters = [triangle.circumcenter for triangle in triangulation]
+    xsorted = sorted(circumcenters, key = lambda point : point.x)
+    ysorted = sorted(circumcenters, key = lambda point : point.y)
+    bounds = [xsorted[0].x-5,ysorted[0].y-5,xsorted[len(xsorted)-1].x+5,ysorted[len(ysorted)-1].y+5]
+
     # voronoi edges are perpendicular to triangulation edges and lie between circumcenters
     voronoi_edges = dict()
     opposite_point = dict()
@@ -105,6 +111,4 @@ if __name__ == "__main__":
         points = []
         for coord in range(0, len(args.points), 2):
             points.append(Point(args.points[coord], args.points[coord+1]))
-        # TODO: dynamic bounds as diagram shows incorrectly when there is a circumcenter outside the bounds
-        bounds = [-10,-10,10,10]
-        plot_voronoi(bounds,points, args.triangulation, args.circles)
+        plot_voronoi(points, args.triangulation, args.circles)
