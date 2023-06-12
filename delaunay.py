@@ -1,5 +1,6 @@
 from geom import Point, Edge, Triangle
 from matplotlib import pyplot as plt
+import argparse
 
 def delaunay_triangulation(points):
     # Bowuyer-Watson algorithm
@@ -65,10 +66,18 @@ def plot_triangulation(triangulation, ax, with_circle=False):
 
 
 if __name__ == "__main__":
-    points = [Point(1,1),Point(2,4),Point(-3,2),Point(6,3),Point(-2.4,3.7),Point(1.5,-2.6),Point(0.2,0.1), Point(0.4,2)]
-
-    triangulation = delaunay_triangulation(points)
-    fig, ax = plt.subplots()
-    ax = plot_triangulation(triangulation, ax, True)
-    ax.set_aspect("equal")
-    plt.show()
+    parser = argparse.ArgumentParser(description="Plot Voronoi diagram")
+    parser.add_argument("points", metavar='p', type=float, nargs='+', help="list of points coordinates, each two consequtive numbers correspond to one point")
+    parser.add_argument("--circles", action="store_true", help="plot Delaunay circumcircles")
+    args = parser.parse_args()
+    if len(args.points) % 2:
+        print("As each point has two coordinates, please provide an even number of coordinates")
+    else:
+        points = []
+        for coord in range(0, len(args.points), 2):
+            points.append(Point(args.points[coord], args.points[coord+1]))
+        triangulation = delaunay_triangulation(points)
+        fig, ax = plt.subplots()
+        ax = plot_triangulation(triangulation, ax, args.circles)
+        ax.set_aspect("equal")
+        plt.show()
